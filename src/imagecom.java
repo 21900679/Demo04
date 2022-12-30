@@ -53,14 +53,14 @@ public class imagecom extends JFrame implements ActionListener {
 
         before.setBounds(10,10,500,645);
         after.setBounds(520, 10, 500, 645);
-        btn[0].setBounds(1040, 10, 127, 40);
-        btn[1].setBounds(1040, 60, 127, 40);
-        btn[2].setBounds(1040, 110, 127, 40);
-        btn[3].setBounds(1040, 160, 127, 40);
-        btn[4].setBounds(1040, 210, 127, 40);
-        light.setBounds(1060, 260, 40, 150);
-        contrast.setBounds(1110, 260, 40, 150);
-        two.setBounds(1055, 400, 127, 40);
+        btn[0].setBounds(1040, 100, 127, 40);
+        btn[1].setBounds(1040, 160, 127, 40);
+        btn[2].setBounds(1040, 220, 127, 40);
+        btn[3].setBounds(1040, 280, 127, 40);
+        btn[4].setBounds(1040, 350, 127, 40);
+        light.setBounds(1060, 420, 40, 150);
+        contrast.setBounds(1110, 420, 40, 150);
+        two.setBounds(1055, 560, 127, 40);
 //        btn[5].setBounds(1040, 420, 127, 40);
 //        btn[6].setBounds(1040, 470, 127, 40);
 
