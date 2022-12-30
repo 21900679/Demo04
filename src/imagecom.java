@@ -1,20 +1,22 @@
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
-public class imagecom extends JFrame implements ActionListener {
+public class imagecom extends JFrame implements ActionListener, ChangeListener {
     before panel = new before();
     after panel2 = new after();
-    JLabel Lafter;
+    JLabel Lafter = new JLabel();
     JButton[] btn = new JButton[5];
     JFileChooser chooser = new JFileChooser();
     Image readimage = null;
-    BufferedImage img;// = new BufferedImage(500, 645, BufferedImage.TYPE_INT_RGB);
-    //Graphics2D sav = img.createGraphics();
+    BufferedImage img;
+    JSlider b;
     imagecom(){
         setSize(1200, 700);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -23,22 +25,23 @@ public class imagecom extends JFrame implements ActionListener {
 
         setLayout(null);
 
-        JSlider b = new JSlider(0, 200, 120);
+        b = new JSlider(0, 200, 120);
         b.setPaintTicks(true);
         b.setPaintTicks(true);
-        b.setPaintLabels(true);
+        //b.setPaintLabels(true);
 
         b.setMajorTickSpacing(50);
-        b.setMinorTickSpacing(5);
+        //b.setMinorTickSpacing(5);
+        b.setBackground(Color.white);
 
         b.setOrientation(SwingConstants.VERTICAL);
         add(b);
-        b.setBounds(1040, 210, 40, 100);
+        b.setBounds(1040, 210, 40, 150);
 
         btn[0] = new JButton("불러오기");
         btn[1] = new JButton("저장하기");
         btn[2] = new JButton("흑백");
-        btn[3] = new JButton("Smoothing");
+        btn[3] = new JButton("밝기");
 
         panel.setBounds(10,10,500,645);
         panel2.setBounds(520, 10, 500, 645);
@@ -67,8 +70,28 @@ public class imagecom extends JFrame implements ActionListener {
         btn[2].addActionListener(this);
         btn[3].addActionListener(this);
 
+        b.addChangeListener(this);
+
         setVisible(true);
     }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        Image imgcopy = img;
+        BufferedImage img2 = imageToBufferedImage(imgcopy);
+        b = (JSlider)e.getSource();
+        for(int y = 0; y < img2.getHeight(); y++) {
+            for(int x = 0; x < img2.getWidth(); x++) {
+                Color color = new Color(img2.getRGB(x, y));
+                int r = (int)Math.min(color.getRed() + b.getValue(), 255);
+                int g = (int)Math.min(color.getGreen()+b.getValue(), 255);
+                int b2 = (int)Math.min(color.getBlue()+b.getValue(), 255);
+                img2.setRGB(x, y, new Color(r, g, b2).getRGB());
+            }
+        }
+        Lafter.setIcon(new ImageIcon(img2));
+    }
+
     class before extends JPanel{
         before(){
 
@@ -85,11 +108,8 @@ public class imagecom extends JFrame implements ActionListener {
         }
         public void paint(Graphics g){
             super.paint(g);
-//            Graphics2D sav = (Graphics2D)g;
-//            sav.drawImage(img,0,0,null);
         }
     }
-
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -106,6 +126,7 @@ public class imagecom extends JFrame implements ActionListener {
         if(e.getActionCommand().equals("흑백")){
             try{
                 File file = new File(chooser.getSelectedFile().getAbsolutePath());
+                System.out.println(chooser.getSelectedFile().getAbsolutePath());
                 Image image = ImageIO.read(file);
                 image = image.getScaledInstance(500, 645, Image.SCALE_DEFAULT);
                 img = imageToBufferedImage(image);
@@ -119,14 +140,29 @@ public class imagecom extends JFrame implements ActionListener {
                     img.setRGB(x, y, new Color(Y, Y, Y).getRGB());
                 }
             }
-            Lafter = new JLabel(new ImageIcon(img));
+            Lafter.setIcon(new ImageIcon(img));
             panel2.add(Lafter);
-            add(panel2);
-            setVisible(true);
-            //ImageIO.write(img, "png",file);
         }
-        if(e.getActionCommand().equals("Smoothing")){
-
+        if(e.getActionCommand().equals("밝기")){
+            try{
+                File file = new File(chooser.getSelectedFile().getAbsolutePath());
+                Image image = ImageIO.read(file);
+                image = image.getScaledInstance(500, 645, Image.SCALE_DEFAULT);
+                img = imageToBufferedImage(image);
+            }catch (Exception a){
+                a.printStackTrace();
+            }
+            for(int y = 0; y < img.getHeight(); y++) {
+                for(int x = 0; x < img.getWidth(); x++) {
+                    Color color = new Color(img.getRGB(x, y));
+                    int r = (int)Math.min(color.getRed() + b.getValue(), 255);
+                    int g = (int)Math.min(color.getGreen()+b.getValue(), 255);
+                    int b2 = (int)Math.min(color.getBlue()+b.getValue(), 255);
+                    img.setRGB(x, y, new Color(r, g, b2).getRGB());
+                }
+            }
+            Lafter.setIcon(new ImageIcon(img));
+            panel2.add(Lafter);
         }
     }
     public BufferedImage imageToBufferedImage(Image im) {
