@@ -8,15 +8,15 @@ import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
-public class imagecom extends JFrame implements ActionListener, ChangeListener {
+public class imagecom extends JFrame implements ActionListener {
     before panel = new before();
     after panel2 = new after();
     JLabel Lafter = new JLabel();
-    JButton[] btn = new JButton[5];
+    JButton[] btn = new JButton[6];
     JFileChooser chooser = new JFileChooser();
     Image readimage = null;
     BufferedImage img;
-    JSlider b;
+    JSlider light, contrast;
     imagecom(){
         setSize(1200, 700);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -25,24 +25,27 @@ public class imagecom extends JFrame implements ActionListener, ChangeListener {
 
         setLayout(null);
 
-        b = new JSlider(0, 200, 120);
-        b.setPaintTicks(true);
-        b.setPaintTicks(true);
+        light = new JSlider(0, 200, 120);
+        contrast = new JSlider(-200, 200, 120);
+        light.setPaintTicks(true);
+        contrast.setPaintTicks(true);
+        light.setPaintTicks(true);
+        contrast.setPaintTicks(true);
         //b.setPaintLabels(true);
 
-        b.setMajorTickSpacing(50);
+        light.setMajorTickSpacing(50);
+        contrast.setMajorTickSpacing(50);
         //b.setMinorTickSpacing(5);
-        b.setBackground(Color.white);
 
-        b.setOrientation(SwingConstants.VERTICAL);
-        add(b);
-        b.setBounds(1040, 260, 40, 150);
+        light.setOrientation(SwingConstants.VERTICAL);
+        contrast.setOrientation(SwingConstants.VERTICAL);
 
         btn[0] = new JButton("불러오기");
         btn[1] = new JButton("저장하기");
         btn[2] = new JButton("흑백");
         btn[3] = new JButton("밝기");
-        btn[4] = new JButton("대조");
+        btn[4] = new JButton("대비");
+        btn[5] = new JButton("Smoothing");
 
         panel.setBounds(10,10,500,645);
         panel2.setBounds(520, 10, 500, 645);
@@ -51,6 +54,9 @@ public class imagecom extends JFrame implements ActionListener, ChangeListener {
         btn[2].setBounds(1040, 110, 127, 40);
         btn[3].setBounds(1040, 160, 127, 40);
         btn[4].setBounds(1040, 210, 127, 40);
+        light.setBounds(1060, 260, 40, 150);
+        contrast.setBounds(1110, 260, 40, 150);
+        btn[5].setBounds(1040, 420, 127, 40);
 
         getContentPane().setBackground(Color.white);
         panel2.setBackground(Color.yellow);
@@ -60,6 +66,9 @@ public class imagecom extends JFrame implements ActionListener, ChangeListener {
         btn[2].setBackground(Color.pink);
         btn[3].setBackground(Color.pink);
         btn[4].setBackground(Color.pink);
+        light.setBackground(Color.white);
+        contrast.setBackground(Color.white);
+        btn[5].setBackground(Color.PINK);
 
         add(panel);
         add(panel2);
@@ -68,33 +77,62 @@ public class imagecom extends JFrame implements ActionListener, ChangeListener {
         add(btn[2]);
         add(btn[3]);
         add(btn[4]);
+        add(light);
+        add(contrast);
+        add(btn[5]);
 
         btn[0].addActionListener(this);
         btn[1].addActionListener(this);
         btn[2].addActionListener(this);
         btn[3].addActionListener(this);
         btn[4].addActionListener(this);
+        btn[5].addActionListener(this);
 
-        b.addChangeListener(this);
-
-        setVisible(true);
-    }
-
-    @Override
-    public void stateChanged(ChangeEvent e) {
-        Image imgcopy = img;
-        BufferedImage img2 = imageToBufferedImage(imgcopy);
-        b = (JSlider)e.getSource();
-        for(int y = 0; y < img2.getHeight(); y++) {
-            for(int x = 0; x < img2.getWidth(); x++) {
-                Color color = new Color(img2.getRGB(x, y));
-                int r = (int)Math.min(color.getRed() + b.getValue(), 255);
-                int g = (int)Math.min(color.getGreen()+b.getValue(), 255);
-                int b2 = (int)Math.min(color.getBlue()+b.getValue(), 255);
-                img2.setRGB(x, y, new Color(r, g, b2).getRGB());
+        light.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                Image imgcopy = img;
+                BufferedImage img2 = imageToBufferedImage(imgcopy);
+                light = (JSlider) e.getSource();
+                for(int y = 0; y < img2.getHeight(); y++) {
+                    for(int x = 0; x < img2.getWidth(); x++) {
+                        Color color = new Color(img2.getRGB(x, y));
+                        int r = (int)Math.min(color.getRed() + light.getValue(), 255);
+                        int g = (int)Math.min(color.getGreen()+light.getValue(), 255);
+                        int b2 = (int)Math.min(color.getBlue()+light.getValue(), 255);
+                        img2.setRGB(x, y, new Color(r, g, b2).getRGB());
+                    }
+                    Lafter.setIcon(new ImageIcon(img2));
+                }
             }
-        }
-        Lafter.setIcon(new ImageIcon(img2));
+
+        });
+
+        contrast.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                Image imgcopy = img;
+                BufferedImage img2 = imageToBufferedImage(imgcopy);
+                contrast = (JSlider) e.getSource();
+                for(int y = 0; y < img2.getHeight(); y++) {
+                    for(int x = 0; x < img2.getWidth(); x++) {
+                        Color color = new Color(img2.getRGB(x, y));
+                        int r = (color.getRed() > 128) ? color.getRed() + contrast.getValue() : color.getRed() - contrast.getValue();
+                        int g = (color.getGreen() > 128) ? color.getGreen() + contrast.getValue() : color.getGreen() - contrast.getValue();
+                        int b2 = (color.getBlue() > 128) ? color.getBlue() + contrast.getValue() : color.getBlue() - contrast.getValue();
+                        r = (int)Math.min(r, 255);
+                        r = (int)Math.max(r, 0);
+                        g = (int)Math.min(g, 255);
+                        g = (int)Math.max(g, 0);
+                        b2 = (int)Math.min(b2, 255);
+                        b2 = (int)Math.max(b2, 0);
+                        img2.setRGB(x, y, new Color(r, g, b2).getRGB());
+                    }
+                }
+                Lafter.setIcon(new ImageIcon(img2));
+            }
+        });
+        setVisible(true);
     }
 
     class before extends JPanel{
@@ -160,16 +198,16 @@ public class imagecom extends JFrame implements ActionListener, ChangeListener {
             for(int y = 0; y < img.getHeight(); y++) {
                 for(int x = 0; x < img.getWidth(); x++) {
                     Color color = new Color(img.getRGB(x, y));
-                    int r = (int)Math.min(color.getRed(), 255);
-                    int g = (int)Math.min(color.getGreen(), 255);
-                    int b2 = (int)Math.min(color.getBlue(), 255);
+                    int r = color.getRed();
+                    int g = color.getGreen();
+                    int b2 = color.getBlue();
                     img.setRGB(x, y, new Color(r, g, b2).getRGB());
                 }
             }
             panel2.add(Lafter);
             Lafter.setIcon(new ImageIcon(img));
         }
-        if(e.getActionCommand().equals("대조")){
+        if(e.getActionCommand().equals("대비")){
             try{
                 File file = new File(chooser.getSelectedFile().getAbsolutePath());
                 Image image = ImageIO.read(file);
@@ -181,20 +219,52 @@ public class imagecom extends JFrame implements ActionListener, ChangeListener {
             for(int y = 0; y < img.getHeight(); y++) {
                 for(int x = 0; x < img.getWidth(); x++) {
                     Color color = new Color(img.getRGB(x, y));
-                    System.out.println("aaaa");
-                    int r = (color.getRed() > 128) ? color.getRed() + b.getValue() : color.getRed() - b.getValue();
-                    int g = (color.getGreen() > 128) ? color.getGreen() + b.getValue() : color.getGreen() - b.getValue();
-                    int b2 = (color.getBlue() > 128) ? color.getBlue() + b.getValue() : color.getBlue() - b.getValue();
-                    if(r > 255){
-
-                    }
-                    r = (int)Math.min(r, 255);
-                    r = (int)Math.max(r,0);
-                    g = (int)Math.min(g, 255);
-                    g = (int)Math.max(g,0);
-                    b2 = (int)Math.min(b2, 255);
-                    b2 = (int)Math.max(b2,0);
+                    int r = color.getRed();
+                    int g = color.getGreen();
+                    int b2 = color.getBlue();
                     img.setRGB(x, y, new Color(r, g, b2).getRGB());
+                }
+            }
+            panel2.add(Lafter);
+            Lafter.setIcon(new ImageIcon(img));
+        }
+        if(e.getActionCommand().equals("Smoothing")){
+            try{
+                File file = new File(chooser.getSelectedFile().getAbsolutePath());
+                Image image = ImageIO.read(file);
+                image = image.getScaledInstance(500, 645, Image.SCALE_DEFAULT);
+                img = imageToBufferedImage(image);
+            }catch (Exception a){
+                a.printStackTrace();
+            }
+//            int[][] num = { {-1, 0, 1},
+//                            {-2, 0, 2},
+//                            {-1, 0, 1}};
+            int[][] red = new int[img.getWidth()][img.getHeight()];
+            int[][] green = new int[img.getWidth()][img.getHeight()];
+            int[][] blue = new int[img.getWidth()][img.getHeight()];
+            int r, g, b;
+            r = g = b = 0;
+            int a = 0;
+            for(int y = 0; y < img.getHeight(); y++) {
+                for(int x = 0; x < img.getWidth(); x++) {
+                    for(int i = -1; i < 2; i++){
+                        for(int j = -1; j < 2; j++){
+                            if(x + i > 0 && y + j > 0 && x + i < img.getWidth() && y + j < img.getHeight()){
+                                a++;
+                                Color color = new Color(img.getRGB(x + i, y + j));
+                                r += color.getRed();
+                                g += color.getGreen();
+                                b += color.getBlue();
+                            }
+
+                        }
+                    }
+                    red[x][y] = r / a;
+                    green[x][y] = g / a;
+                    blue[x][y] = b / a;
+                    img.setRGB(x, y, new Color(red[x][y], green[x][y], blue[x][y]).getRGB());
+                    a = r = g = b = 0;
                 }
             }
             panel2.add(Lafter);
