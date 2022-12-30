@@ -36,12 +36,13 @@ public class imagecom extends JFrame implements ActionListener, ChangeListener {
 
         b.setOrientation(SwingConstants.VERTICAL);
         add(b);
-        b.setBounds(1040, 210, 40, 150);
+        b.setBounds(1040, 260, 40, 150);
 
         btn[0] = new JButton("불러오기");
         btn[1] = new JButton("저장하기");
         btn[2] = new JButton("흑백");
         btn[3] = new JButton("밝기");
+        btn[4] = new JButton("대조");
 
         panel.setBounds(10,10,500,645);
         panel2.setBounds(520, 10, 500, 645);
@@ -49,6 +50,7 @@ public class imagecom extends JFrame implements ActionListener, ChangeListener {
         btn[1].setBounds(1040, 60, 127, 40);
         btn[2].setBounds(1040, 110, 127, 40);
         btn[3].setBounds(1040, 160, 127, 40);
+        btn[4].setBounds(1040, 210, 127, 40);
 
         getContentPane().setBackground(Color.white);
         panel2.setBackground(Color.yellow);
@@ -57,6 +59,7 @@ public class imagecom extends JFrame implements ActionListener, ChangeListener {
         btn[1].setBackground(Color.PINK);
         btn[2].setBackground(Color.pink);
         btn[3].setBackground(Color.pink);
+        btn[4].setBackground(Color.pink);
 
         add(panel);
         add(panel2);
@@ -64,11 +67,13 @@ public class imagecom extends JFrame implements ActionListener, ChangeListener {
         add(btn[1]);
         add(btn[2]);
         add(btn[3]);
+        add(btn[4]);
 
         btn[0].addActionListener(this);
         btn[1].addActionListener(this);
         btn[2].addActionListener(this);
         btn[3].addActionListener(this);
+        btn[4].addActionListener(this);
 
         b.addChangeListener(this);
 
@@ -140,8 +145,8 @@ public class imagecom extends JFrame implements ActionListener, ChangeListener {
                     img.setRGB(x, y, new Color(Y, Y, Y).getRGB());
                 }
             }
-            Lafter.setIcon(new ImageIcon(img));
             panel2.add(Lafter);
+            Lafter.setIcon(new ImageIcon(img));
         }
         if(e.getActionCommand().equals("밝기")){
             try{
@@ -155,14 +160,45 @@ public class imagecom extends JFrame implements ActionListener, ChangeListener {
             for(int y = 0; y < img.getHeight(); y++) {
                 for(int x = 0; x < img.getWidth(); x++) {
                     Color color = new Color(img.getRGB(x, y));
-                    int r = (int)Math.min(color.getRed() + b.getValue(), 255);
-                    int g = (int)Math.min(color.getGreen()+b.getValue(), 255);
-                    int b2 = (int)Math.min(color.getBlue()+b.getValue(), 255);
+                    int r = (int)Math.min(color.getRed(), 255);
+                    int g = (int)Math.min(color.getGreen(), 255);
+                    int b2 = (int)Math.min(color.getBlue(), 255);
                     img.setRGB(x, y, new Color(r, g, b2).getRGB());
                 }
             }
-            Lafter.setIcon(new ImageIcon(img));
             panel2.add(Lafter);
+            Lafter.setIcon(new ImageIcon(img));
+        }
+        if(e.getActionCommand().equals("대조")){
+            try{
+                File file = new File(chooser.getSelectedFile().getAbsolutePath());
+                Image image = ImageIO.read(file);
+                image = image.getScaledInstance(500, 645, Image.SCALE_DEFAULT);
+                img = imageToBufferedImage(image);
+            }catch (Exception a){
+                a.printStackTrace();
+            }
+            for(int y = 0; y < img.getHeight(); y++) {
+                for(int x = 0; x < img.getWidth(); x++) {
+                    Color color = new Color(img.getRGB(x, y));
+                    System.out.println("aaaa");
+                    int r = (color.getRed() > 128) ? color.getRed() + b.getValue() : color.getRed() - b.getValue();
+                    int g = (color.getGreen() > 128) ? color.getGreen() + b.getValue() : color.getGreen() - b.getValue();
+                    int b2 = (color.getBlue() > 128) ? color.getBlue() + b.getValue() : color.getBlue() - b.getValue();
+                    if(r > 255){
+
+                    }
+                    r = (int)Math.min(r, 255);
+                    r = (int)Math.max(r,0);
+                    g = (int)Math.min(g, 255);
+                    g = (int)Math.max(g,0);
+                    b2 = (int)Math.min(b2, 255);
+                    b2 = (int)Math.max(b2,0);
+                    img.setRGB(x, y, new Color(r, g, b2).getRGB());
+                }
+            }
+            panel2.add(Lafter);
+            Lafter.setIcon(new ImageIcon(img));
         }
     }
     public BufferedImage imageToBufferedImage(Image im) {
