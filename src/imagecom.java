@@ -12,7 +12,7 @@ public class imagecom extends JFrame implements ActionListener {
     before panel = new before();
     after panel2 = new after();
     JLabel Lafter = new JLabel();
-    JButton[] btn = new JButton[6];
+    JButton[] btn = new JButton[7];
     JFileChooser chooser = new JFileChooser();
     Image readimage = null;
     BufferedImage img;
@@ -46,6 +46,7 @@ public class imagecom extends JFrame implements ActionListener {
         btn[3] = new JButton("밝기");
         btn[4] = new JButton("대비");
         btn[5] = new JButton("Smoothing");
+        btn[6] = new JButton("edge");
 
         panel.setBounds(10,10,500,645);
         panel2.setBounds(520, 10, 500, 645);
@@ -57,6 +58,7 @@ public class imagecom extends JFrame implements ActionListener {
         light.setBounds(1060, 260, 40, 150);
         contrast.setBounds(1110, 260, 40, 150);
         btn[5].setBounds(1040, 420, 127, 40);
+        btn[6].setBounds(1040, 470, 127, 40);
 
         getContentPane().setBackground(Color.white);
         panel2.setBackground(Color.yellow);
@@ -69,6 +71,7 @@ public class imagecom extends JFrame implements ActionListener {
         light.setBackground(Color.white);
         contrast.setBackground(Color.white);
         btn[5].setBackground(Color.PINK);
+        btn[6].setBackground(Color.PINK);
 
         add(panel);
         add(panel2);
@@ -80,6 +83,7 @@ public class imagecom extends JFrame implements ActionListener {
         add(light);
         add(contrast);
         add(btn[5]);
+        add(btn[6]);
 
         btn[0].addActionListener(this);
         btn[1].addActionListener(this);
@@ -87,6 +91,7 @@ public class imagecom extends JFrame implements ActionListener {
         btn[3].addActionListener(this);
         btn[4].addActionListener(this);
         btn[5].addActionListener(this);
+        btn[6].addActionListener(this);
 
         light.addChangeListener(new ChangeListener() {
             @Override
@@ -237,15 +242,13 @@ public class imagecom extends JFrame implements ActionListener {
             }catch (Exception a){
                 a.printStackTrace();
             }
-//            int[][] num = { {-1, 0, 1},
-//                            {-2, 0, 2},
-//                            {-1, 0, 1}};
             int[][] red = new int[img.getWidth()][img.getHeight()];
             int[][] green = new int[img.getWidth()][img.getHeight()];
             int[][] blue = new int[img.getWidth()][img.getHeight()];
             int r, g, b;
             r = g = b = 0;
             int a = 0;
+            BufferedImage outputImage = new BufferedImage(img.getWidth(), img.getHeight(), Image.SCALE_SMOOTH);
             for(int y = 0; y < img.getHeight(); y++) {
                 for(int x = 0; x < img.getWidth(); x++) {
                     for(int i = -1; i < 2; i++){
@@ -257,18 +260,95 @@ public class imagecom extends JFrame implements ActionListener {
                                 g += color.getGreen();
                                 b += color.getBlue();
                             }
-
                         }
                     }
                     red[x][y] = r / a;
                     green[x][y] = g / a;
                     blue[x][y] = b / a;
-                    img.setRGB(x, y, new Color(red[x][y], green[x][y], blue[x][y]).getRGB());
+                    outputImage.setRGB(x, y, new Color(red[x][y], green[x][y], blue[x][y]).getRGB());
                     a = r = g = b = 0;
                 }
             }
             panel2.add(Lafter);
-            Lafter.setIcon(new ImageIcon(img));
+            Lafter.setIcon(new ImageIcon(outputImage));
+        }
+        if(e.getActionCommand().equals("edge")){
+            try{
+                File file = new File(chooser.getSelectedFile().getAbsolutePath());
+                Image image = ImageIO.read(file);
+                image = image.getScaledInstance(500, 645, Image.SCALE_DEFAULT);
+                img = imageToBufferedImage(image);
+            }catch (Exception a){
+                a.printStackTrace();
+            }
+            for(int y = 0; y < img.getHeight(); y++) {
+                for(int x = 0; x < img.getWidth(); x++) {
+                    Color colour = new Color(img.getRGB(x, y));
+                    int Y = (int) (0.2126 * colour.getRed() + 0.7152 * colour.getGreen() + 0.0722 * colour.getBlue());
+                    img.setRGB(x, y, new Color(Y, Y, Y).getRGB());
+                }
+            }
+            int[][] red = new int[img.getWidth()][img.getHeight()];
+            int[][] green = new int[img.getWidth()][img.getHeight()];
+            int[][] blue = new int[img.getWidth()][img.getHeight()];
+            int r, g, b;
+            r = g = b = 0;
+            int a = 0;
+            BufferedImage outputImage = new BufferedImage(img.getWidth(), img.getHeight(), Image.SCALE_SMOOTH);
+            for(int y = 0; y < img.getHeight(); y++) {
+                for(int x = 0; x < img.getWidth(); x++) {
+                    for(int i = -1; i < 2; i++){
+                        for(int j = -1; j < 2; j++){
+                            if(x + i > 0 && y + j > 0 && x + i < img.getWidth() && y + j < img.getHeight()){
+                                a++;
+                                Color color = new Color(img.getRGB(x + i, y + j));
+                                r += color.getRed();
+                                g += color.getGreen();
+                                b += color.getBlue();
+                            }
+                        }
+                    }
+                    red[x][y] = r / a;
+                    green[x][y] = g / a;
+                    blue[x][y] = b / a;
+                    outputImage.setRGB(x, y, new Color(red[x][y], green[x][y], blue[x][y]).getRGB());
+                    a = r = g = b = 0;
+                }
+            }
+            int[][] height = { {-1, 0, 1},
+                               {-2, 0, 2},
+                               {-1, 0, 1}};
+            int[][] width = { {-1,-2,-1},
+                              {0, 0, 0},
+                              {1, 2, 1}};
+            int[][] height1 = new int[outputImage.getWidth()][outputImage.getHeight()];
+            int[][] width1 = new int[outputImage.getWidth()][outputImage.getHeight()];
+            BufferedImage outputImage1 = new BufferedImage(img.getWidth(), img.getHeight(), Image.SCALE_SMOOTH);
+            r = g = 0;
+            for(int y = 0; y < outputImage1.getHeight(); y++){
+                for(int x = 0; x < outputImage1.getWidth(); x++){
+                    for(int i = -1; i < 2; i++){
+                        for(int j = -1; j < 2; j++){
+                            if(x + i > 0 && y + j > 0 && x + i < outputImage1.getWidth() && y + j < outputImage1.getHeight()){
+                                Color color = new Color(outputImage.getRGB(x + i, y + j));
+                                r += (color.getRed() * height[i + 1][j + 1]);
+                                g += (color.getRed() * width[i + 1][j + 1]);
+                            }
+                        }
+                    }
+                    height1[x][y] = r * r;
+                    width1[x][y] = g * g;
+                    double ee = Math.sqrt(height1[x][y] + width1[x][y]);
+                    if(ee > 100)
+                        ee = 0;
+                    else
+                        ee = 255;
+                    outputImage1.setRGB(x, y, new Color((int)ee, (int)ee, (int)ee).getRGB());
+                    r = g = 0;
+                }
+            }
+            panel2.add(Lafter);
+            Lafter.setIcon(new ImageIcon(outputImage1));
         }
     }
     public BufferedImage imageToBufferedImage(Image im) {
